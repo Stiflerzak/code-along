@@ -1,0 +1,16 @@
+# ══════════════════════════════════════════════════════════════
+# MariaDB Configuration
+# ══════════════════════════════════════════════════════════════
+# Setup: CREATE DATABASE task;
+# Default port: 3306
+
+spring:
+  datasource:
+    url: jdbc:mariadb://localhost:3306/task?useSSL=false&serverTimezone=UTC
+    username: your_username
+    password: your_password
+    driver-class-name: org.mariadb.jdbc.Driver
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MariaDBDialect

@@ -1,0 +1,15 @@
+# ══════════════════════════════════════════════════════════════
+# PostgreSQL Configuration (ACTIVE — this is what we're using)
+# ══════════════════════════════════════════════════════════════
+# Setup: CREATE DATABASE task;
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/tasks
+    username: your_username
+    password: your_password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
