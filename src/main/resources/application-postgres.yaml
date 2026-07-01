@@ -6,8 +6,8 @@
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/tasks
-    username: your_username
-    password: your_password
+    username: bancassurance
+    password: 123456789
     driver-class-name: org.postgresql.Driver
   jpa:
     properties:

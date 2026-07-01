@@ -7,6 +7,9 @@ import nene.backend.task.model.Task;
 import nene.backend.task.repository.TaskRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.UUID;
+
 // TODO: Concept - SERVICE LAYER
 //  The Service layer contains BUSINESS LOGIC — the "brain" of your app.
 //  It sits between the Controller (HTTP) and Repository (Database).
@@ -27,6 +30,10 @@ import org.springframework.stereotype.Service;
 public class TaskService {
 
     private final TaskRepository taskRepository;
+
+    // ─────────────────────────────────────────────
+    // CREATE
+    // ─────────────────────────────────────────────
 
     // TODO: Concept - METHOD that handles CREATE logic
     //  1. Takes in a DTO (what the client sent)
@@ -59,14 +66,93 @@ public class TaskService {
         //  {} is a placeholder that gets replaced by the value after the comma.
         log.info("Task created successfully: {}", savedTask.getTitle());
 
-        // TODO: Concept - MAPPING ENTITY → RESPONSE DTO
-        //  We convert the entity to a response DTO before sending it back.
-        //  This controls exactly what the client sees.
         return mapToResponse(savedTask);
     }
 
+    // ─────────────────────────────────────────────
+    // READ ALL
+    // ─────────────────────────────────────────────
+
+    // TODO: Concept - RETRIEVING ALL RECORDS
+    //  taskRepository.findAll() does: SELECT * FROM tasks
+    //  We then convert each Task entity → Response DTO using .map()
+    public List<TaskDto.Response> getAllTasks() {
+        List<Task> tasks = taskRepository.findAll();
+        log.info("Retrieved {} tasks", tasks.size());
+        return tasks.stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    // ─────────────────────────────────────────────
+    // READ ONE
+    // ─────────────────────────────────────────────
+
+    // TODO: Concept - FINDING BY ID
+    //  findById() returns an Optional<Task> — it might be empty if the ID doesn't exist.
+    //  .orElseThrow() unwraps the value OR throws an exception if not found.
+    public TaskDto.Response getTaskById(UUID id) {
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Task not found with id: " + id));
+        return mapToResponse(task);
+    }
+
+    // ─────────────────────────────────────────────
+    // UPDATE
+    // ─────────────────────────────────────────────
+
+    // TODO: Concept - UPDATING A RECORD
+    //  1. Find the existing task (throw error if not found)
+    //  2. Update only the fields that were sent
+    //  3. Save it again — JPA knows to do an UPDATE (not INSERT) because the entity has an ID
+    public TaskDto.Response updateTask(UUID id, TaskDto.UpdateRequest request) {
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Task not found with id: " + id));
+
+        task.setTitle(request.getTitle());
+        task.setDescription(request.getDescription());
+
+        if (request.getDueDate() != null) {
+            task.setDueDate(request.getDueDate());
+        }
+
+        if (request.getPriority() != null) {
+            task.setPriority(Task.Priority.valueOf(request.getPriority()));
+        }
+
+        if (request.getStatus() != null) {
+            task.setStatus(Task.TaskStatus.valueOf(request.getStatus()));
+        }
+
+        Task updatedTask = taskRepository.save(task);
+        log.info("Task updated successfully: {}", updatedTask.getTitle());
+
+        return mapToResponse(updatedTask);
+    }
+
+    // ─────────────────────────────────────────────
+    // DELETE
+    // ─────────────────────────────────────────────
+
+    // TODO: Concept - DELETING A RECORD
+    //  1. Check if the task exists first (throw error if not)
+    //  2. Delete it by ID
+    //  deleteById() does: DELETE FROM tasks WHERE id = ?
+    public void deleteTask(UUID id) {
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Task not found with id: " + id));
+
+        taskRepository.deleteById(id);
+        log.info("Task deleted successfully: {}", task.getTitle());
+    }
+
+    // ─────────────────────────────────────────────
+    // HELPER
+    // ─────────────────────────────────────────────
+
     // TODO: Concept - PRIVATE HELPER METHOD
     //  Private means only THIS class can use it. It's a reusable utility.
+    //  We use it in every method to convert Entity → Response DTO.
     private TaskDto.Response mapToResponse(Task task) {
         return TaskDto.Response.builder()
                 .id(task.getId())
